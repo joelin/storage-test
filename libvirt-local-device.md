@@ -53,14 +53,14 @@ sdb_pool             active     yes
 libvirt使用本地物理磁盘时，只是把磁盘的分区过程进行封装，最终还是通过qemu使用设备
 
 # 使用本地逻辑卷
-libvirt 会先定义一个存储池；对于逻辑卷而言，是一个卷组。对于裸设备`/dev/sdb /dev/sde` 定义的文件如下池文件`lvm_pool.xml`
+libvirt 会先定义一个存储池；对于逻辑卷而言，是一个卷组。对于物理卷(8e分区类型)`/dev/sdb1 /dev/sdb2` 定义的文件如下池文件`lvm_pool.xml`
 
 ```
 <pool type="logical">
   <name>lvm_pool</name>
   <source>
-    <device path='/dev/sdb'/>  
-    <device path='/dev/sde'/>  
+    <device path='/dev/sdb1'/>  
+    <device path='/dev/sdb2'/>  
   </source>
   <target>
     <path>/lvm_pool</path>
