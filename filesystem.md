@@ -9,6 +9,37 @@
 柱面
 扇区 512字节
 
+### 数据读取机制
+
+机械硬盘数据读取分为寻道、旋转、传输三部分，相比前两部分，往往传输时间可以忽略。寻道为移动磁头找到要读取数据所在的正确磁道，然后旋转磁片，让磁头对准目标数据的扇区，其所花时间一般为ms。
+寻道时间不同的厂商有不同的算法，大概都在几个毫秒内，一般为3毫秒。旋转时间取最大时间的平局值，为盘片旋转一周所花时间的一半，根据硬盘的转速可以确定。
+一次读写理论上所花时间为： `IO time = T seek+ 60*1000／Nrpm／2` ms
+
+**当然此为理论值，往往有其它影响因子会影响这个时间，比如cache的命中率(cache的大小、算法)、读写的区别、以及操作数据块的大小。**
+
+下表为wiki上的机械盘iops理论数据，可以参考
+
+Device|	Type|	IOPS|	Interface	Notes
+------|------|-----|-------------------
+7,200 rpm |SATA drives	HDD	|~75-100 	|SATA 3 Gbit/s
+10,000 rpm |SATA drives	HDD	|~125-150 	|SATA 3 Gbit/s
+10,000 rpm |SAS drives	HDD|~140 	|SAS
+15,000 rpm |SAS drives	HDD	|~175-210 |SAS
+
+如果硬盘组成阵列，则会进一步提升iops，下表为不同raid下的iops的换算方案
+
+RAID类型|公式
+-------|----
+RAID5、RAID3|Drive IOPS=Read IOPS + 4*Write IOPS
+RAID6|Drive IOPS=Read IOPS +  6*Write IOPS
+RAID1、RAID10|Drive IOPS=Read IOPS + 2*Write IOPS
+
+
+示例，比如目标要提供一个读写比例为7:3的存储设备，iops要求能够达到7000.如果使用15000转的sas盘组RAID6，需要采购多少块盘？
+实际iops为 0.7*7000+6*0.3*7000 = 4900+12600 = 17500
+sas盘数 17500/180 = 98块盘
+
+
 ### mbr
  MBR磁盘分区是一种使用最为广泛的分区结构，它也被称为DOS分区结构，但它并不仅仅应用于Windows系统平台，也应用于Linux，基于X86的UNIX等系统平台。它位于磁盘的0号扇区一扇区等于512字节），是一个重要的扇区简称MBR扇区）。
 
