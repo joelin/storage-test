@@ -1,21 +1,21 @@
 # openstack后端存储ceph的升级
 openstack后端存储 ceph 的升级是一个比较危险的过程，我们基于 openstack L 版部署，对接后端存储为 ceph 的 Hammer .目前想把 ceph 升级到 Jewel 版本，为将来使用更新版本做准备。此升级方案只包含块存储服务的升级，不包含对象和文件系统的升级操作。
 
-## 1.单机集群升级
+## 1 单机集群升级
 
-### 1.1更新源到 J 版
+### 1.1 更新源到 J 版
 
 change repo to j
 
-### 1.2停止一个节点
+### 1.2 停止一个节点
 
 > /etc/init.d/ceph stop
 
-### 1.3更新软件
+### 1.3 更新软件
 
 > yum install ceph
 
-### 1.4更改目录权限
+### 1.4 更改目录权限
 
 >chown -R ceph:ceph /var/lib/ceph
 
@@ -23,21 +23,21 @@ change repo to j
 
 >chown -R ceph:ceph /var/run/ceph
 
-### 1.5更改分区权限
+### 1.5 更改分区权限
 
 需要把ceph所使用的所有分区(包含journal和data分区)的属主调整为ceph用户，从J开始，ceph服务使用ceph 用户启动，并且使用systemd 来管理服务。
 
 >chown -R ceph:ceph /dev/sdb1
 
 
-### 1.6启动服务
+### 1.6 启动服务
 
 > systemctl start ceph-mon@hostname
 
 > systemctl start ceph-osd@num
 
 
-### 1.7调整为新版本的ceph配置
+### 1.7 调整为新版本的ceph配置
 整个集群升级完成后需要调整集群的参数到新版本，否则会出现集群的异常状态。
 
 
@@ -75,19 +75,19 @@ change repo to j
 >ceph osd crush tunables optimal
 
 
-## 2多机集群升级
+## 2 多机集群升级
 openstack L 版本，后端的 glance cinder 都使用 ceph 对接，ceph 集群为 3 节点。参考单节点的验证步骤，我们逐个节点来升级，以下步骤逐个节点操作，以保证集群的正常服务水平。
 
-### 2.1单节点升级操作
+### 2.1 单节点升级操作
 
-#### 2.1.1准备工作
+#### 2.1.1 准备工作
 更新源指向J版
 
-#### 2.1.2停止
+#### 2.1.2 停止节点服务
 
 > /etc/init.d/ceph stop
 
-#### 2.1.3更新软件
+#### 2.1.3 更新软件
 
 > yum udpate ceph
 
@@ -97,7 +97,7 @@ openstack L 版本，后端的 glance cinder 都使用 ceph 对接，ceph 集群
 
 > yum install ceph
 
-#### 2.1.4更改目录权限
+#### 2.1.4 更改目录权限
 
 >chown -R ceph:ceph /var/lib/ceph
 
@@ -133,6 +133,12 @@ openstack L 版本，后端的 glance cinder 都使用 ceph 对接，ceph 集群
 查看状态，正常应该是已加入集群
 > systemctl status ceph-osd@{osd.num}
 
+#### 2.1.7 确认集群状态
+
+使用 `ceph -s `查看集群状态,此时集群应该会发生recovery，为了保证集群数据的安全性，需要等待recovery结束才能开始下一节点的升级操作。也就是集群的状态为 OK .
+> ceph -s 
+
+
 ### 2.2 调整为新版本的ceph配置
 
 整个集群升级完成后需要调整集群的参数到新版本，否则会出现集群的异常状态。参考单节点的此步骤描述
@@ -150,3 +156,7 @@ openstack L 版本，后端的 glance cinder 都使用 ceph 对接，ceph 集群
 ### 2.3.2 glance对接升级
 
 ### 2.3.3 compute对接升级
+
+
+## 3 参考
+- http://docs.ceph.com/docs/master/release-notes/#id597
