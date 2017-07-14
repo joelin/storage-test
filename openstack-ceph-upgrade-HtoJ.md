@@ -150,13 +150,74 @@ openstack L 版本，后端的 glance cinder 都使用 ceph 对接，ceph 集群
 >ceph osd crush tunables optimal
 
 ### 2.3 客户端升级
+每个对接的服务先升级`ceph`版本，重启其依赖的服务，如果是计算节点，虚拟机必须要重启。
 
 ### 2.3.1 cinder对接升级
+增加 ceph J 版的repo源
+> yum update ceph
+
+如果有特殊原因没法直接更新软件包，需要手工卸载软件包，并安装新的版本。因为librbd会被kvm依赖，所以要忽略依赖强制卸载。
+
+> mv /etc/ceph /etc/ceph.bk
+
+> rpm -e ceph
+
+> yum install ceph
+
+> mv /etc/ceph.bk /etc/ceph
+
+重启 ceph对接的 `cinder-volume` 服务
+
+> systemctl restart openstack-cinder-volume-ceph 
+
 
 ### 2.3.2 glance对接升级
+增加 ceph J 版的repo源
+> yum update ceph
+
+如果有特殊原因没法直接更新软件包，需要手工卸载软件包，并安装新的版本。因为librbd会被kvm依赖，所以要忽略依赖强制卸载。
+
+> mv /etc/ceph /etc/ceph.bk
+
+> rpm -e ceph
+
+> yum install ceph
+
+> mv /etc/ceph.bk /etc/ceph
+
+重启`glance` 服务
+
+> systemctl restart openstack-glance-api
+
+
 
 ### 2.3.3 compute对接升级
 
+> yum update ceph
 
-## 3 参考
+如果有特殊原因没法直接更新软件包，需要手工卸载软件包，并安装新的版本。因为librbd会被kvm依赖，所以要忽略依赖强制卸载。
+
+> mv /etc/ceph /etc/ceph.bk
+
+> rpm -e ceph
+
+> yum install ceph
+
+> mv /etc/ceph.bk /etc/ceph
+
+重启`libvirt` `nova-compute` 服务，使其使用最新版本的`librbd` 模块。
+
+> systemctl restart libvirtd
+
+> systemctl restart openstack-nova-compute
+
+## 3 影响性总结及注意事项
+
+* 1、升级过程不能对 `openstack` 集群有任何的操作，包含虚拟机、云硬盘等
+* 2、当执行到2.2步结束后，正常运行的虚拟机为运行状态，但是无法正常读写
+* 3、为了对虚拟机的影响性最小，可以同步对集群、`openstack`服务进行软件升级动作，等集群的2.2步完成后，依次重启虚拟机即可
+* 4、整个过程大概需要30分钟时间，具体视集群的大小自行评估
+
+
+## 4 参考
 - http://docs.ceph.com/docs/master/release-notes/#id597
