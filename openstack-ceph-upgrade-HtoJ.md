@@ -19,7 +19,9 @@ change repo to j
 ### 更改目录权限
 
 >chown -R ceph:ceph /var/lib/ceph
+
 >chown -R ceph:ceph /var/log/ceph
+
 >chown -R ceph:ceph /var/run/ceph
 
 ### 更改分区权限
@@ -30,13 +32,16 @@ change repo to j
 ### 启动服务
 
 > systemctl start ceph-mon@hostname
+
 > systemctl start ceph-osd@num
 
 
 ### 调整为新版本的ceph配置
 
 >ceph osd set sortbitwise
+
 >ceph osd set require_jewel_osds
+
 >ceph osd crush tunables optimal
 
 
