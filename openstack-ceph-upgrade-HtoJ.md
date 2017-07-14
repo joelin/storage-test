@@ -142,3 +142,11 @@ openstack L 版本，后端的 glance cinder 都使用 ceph 对接，ceph 集群
 >ceph osd set require_jewel_osds
 
 >ceph osd crush tunables optimal
+
+### 2.3 客户端升级
+
+### 2.3.1 cinder对接升级
+
+### 2.3.2 glance对接升级
+
+### 2.3.3 compute对接升级
